@@ -2,9 +2,13 @@ package br.com.alura.Screenmatch.principal;
 import br.com.alura.Screenmatch.model.DadoEpisodio;
 import br.com.alura.Screenmatch.model.DadoSerie;
 import br.com.alura.Screenmatch.model.DadoTemporada;
+import br.com.alura.Screenmatch.model.Episodio;
 import br.com.alura.Screenmatch.services.ConsumoApi;
 import br.com.alura.Screenmatch.services.ConverterDados;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -58,5 +62,28 @@ public class Principal {
                 .sorted(Comparator.comparing(DadoEpisodio::avaliacao).reversed())
                 .limit(5)
                 .forEach(System.out::println);
+
+        List<Episodio> episodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream()
+                .map(d -> new Episodio(t.numero(), d))
+                ).collect(Collectors.toList());
+
+        episodios.forEach(System.out::println);
+
+        System.out.println("A partir de que ano voce deseja ver os episodios? ");
+        var ano = leitura.nextInt();
+        leitura.nextLine();
+
+        LocalDate dataBusca = LocalDate.of(ano, 1, 1);
+
+        DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        episodios.stream()
+                .filter(e -> e.getDataLancamento() != null && e.getDataLancamento().isAfter(dataBusca))
+                .forEach(e -> System.out.println(
+                        "Temporada: " + e.getTemporada() +
+                                " Episodio: " + e.getTitulo() +
+                                " Data de Lancamento: " + e.getDataLancamento().format(formatador)
+                ));
     }
 }
